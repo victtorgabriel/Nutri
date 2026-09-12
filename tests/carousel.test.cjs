@@ -1,0 +1,16 @@
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const context = vm.createContext({});
+vm.runInContext(readFileSync(join(__dirname, '../frontend/carousel.js'), 'utf8'), context);
+let tick, active = false, current = 0;
+const controller = context.createCarousel(3, index => { current = index; }, callback => { tick = callback; active = true; return 1; }, () => { active = false; });
+controller.start(); assert.equal(active, true);
+tick(); assert.equal(current, 1);
+tick(); tick(); assert.equal(current, 0);
+controller.move(-1); assert.equal(current, 2);
+controller.stop(); assert.equal(active, false);
+controller.start(); assert.equal(active, true);
+controller.stop();
+console.log('Carrossel: avanço automático, retorno circular, anterior, pausa e retomada verificados.');
